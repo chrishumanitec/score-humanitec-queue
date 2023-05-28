@@ -1,5 +1,24 @@
 #!/bin/bash
 
+API_PREFIX=https://api.humanitec.io
+HUMANITEC_CONTEXT="${HUMANITEC_CONTEXT:-/orgs/chris-test-org/apps/score-test/envs/dev}"
+
+. request.sh
+
+# Get active deployment in the environment so that we have a safe timestamp that is before any possible deployment our 
+# delta would be in.
+
+resp="$(make_request GET "$HUMANITEC_CONTEXT")"
+if [ "$(get_status_code "${resp}")" -ge 400 ]
+then
+  http_error "$(get_status_code "${resp}")" >&2
+  return 1
+fi
+
+active_deploy_timestamp="$(get_response_body "${resp}" | jq .last_deploy.created_at)"
+
+
+
 DELTA_ID=""
 
 while [ -n "$DELTA_ID" ]
