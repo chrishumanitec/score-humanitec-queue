@@ -253,6 +253,10 @@ done
 #
 [ "${DEBUG:-0}" -ge 1 ] && echo "Deploy ID for this delta: ${DEPLOY_ID}"
 
+# If for some reason the delta was not marked as archived, archive it now.
+# This avoids getting stuck in a loop where the deployment is always assumed to have happened.
+make_request PUT "/orgs/${ORG_ID}/apps/${APP_ID}/deltas/${DELTA_ID}/metadata/archived" "true" > /dev/null
+
 
 DEPLOY_STATUS="in progress"
 while [ "${DEPLOY_STATUS}" = "in progress" ]
