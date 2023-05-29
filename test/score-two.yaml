@@ -1,0 +1,9 @@
+apiVersion: score.dev/v1b1
+metadata:
+  name: two
+
+containers:
+  sample-service:
+    image: registry.humanitec.io/public/sample-app:1.3.0
+    variables:
+      EXAMPLE: two-1
