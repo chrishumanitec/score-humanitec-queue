@@ -1,7 +1,10 @@
+#!/bin/bash
 
 # Limit this file to be sourced only once
 [ -z "${__REQUEST__SOURCED__}" ] || return
 __REQUEST__SOURCED__=1
+
+PREFIX=${API_PREFIX:-https://api.humanitec.io}
 
 ###############################################################################
 # HTTP REQUEST HANDLING
@@ -83,7 +86,7 @@ function http_error
 # make_request GET /orgs/my-org/apps | jq -s nth(0)
 function make_request ()
 {
-  log make_request "$@"
+  [ "${DEBUG:-0}" -ge 2 ] && echo "${@}" >&2
   curl_write="%{http_code}"
   while [[ "${1}" =~ ^--[A-Za-z0-9_-]+ ]]
   do
@@ -92,7 +95,7 @@ function make_request ()
         curl_write=""
         ;;
       *)
-        log "make_request: Unknown switch ${1}"
+        echo "make_request: Unknown switch ${1}" >&2
         ;;
     esac
     shift
@@ -107,7 +110,7 @@ function make_request ()
           echo "Missing payload for ${method} request." >&2
           return 1
       fi
-      curl -s -w "${curl_write}" -X "${method}" -H "Content-Type:application/json" -H "${AUTH_HEADER}" -d "${payload}" "${PREFIX}${url}"
+      curl -s -w "${curl_write}" -X "${method}" -H "Content-Type:application/json" -H "Authorization: Bearer ${HUMANITEC_TOKEN}" -d "${payload}" "${PREFIX}${url}"
       err="$?"
       if (( err ))
       then
@@ -116,7 +119,7 @@ function make_request ()
       fi
       ;;
       DELETE|OPTIONS|GET)
-      curl -s -w "${curl_write}" -H "${AUTH_HEADER}" -X "${method}" "${PREFIX}${url}"
+      curl -s -w "${curl_write}" -H "Authorization: Bearer ${HUMANITEC_TOKEN}" -X "${method}" "${PREFIX}${url}"
       err="$?"
       if (( err ))
       then
